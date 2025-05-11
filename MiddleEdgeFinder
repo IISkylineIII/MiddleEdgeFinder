@@ -1,0 +1,35 @@
+def find_middle_edge(match_reward, mismatch_penalty, indel_penalty, v, w):
+    m, n = len(v), len(w)
+    if m > n:
+        return find_middle_edge(match_reward, mismatch_penalty, indel_penalty, w, v)
+    scores = [[0] * (n + 1) for _ in range(m + 1)]
+    pointer = [[0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(m + 1):
+        scores[i][0] = -indel_penalty * i
+    for j in range(n + 1):
+        scores[0][j] = -indel_penalty * j
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            scores[i][j], pointer[i][j] = max(
+                (scores[i - 1][j - 1] + (match_reward if v[i - 1] == w[j - 1] else mismatch_penalty), 0),
+                (scores[i - 1][j] - indel_penalty, 1),
+                (scores[i][j - 1] - indel_penalty, 2)
+            )
+
+    i, j = m, n
+    middle_edge = []
+    while i > 0 or j > 0:
+        if pointer[i][j] == 0:
+            i -= 1
+            j -= 1
+        elif pointer[i][j] == 1:
+            i -= 1
+        else:
+            j -= 1
+        middle_edge.append((i, j))
+
+    return scores[m][n], middle_edge[::-1]
+
+print(find_middle_edge(1, 1, 2, "GAGA", "GAT"))
